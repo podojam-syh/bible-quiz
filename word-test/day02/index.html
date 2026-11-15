@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>영단어 시험 · Word Master DAY 02</title>
+<meta property="og:title" content="영단어 시험 · Word Master DAY 02">
+<meta property="og:description" content="뜻을 보고 영어 단어를 써 보세요 (20문제)">
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; font-family: -apple-system, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+    background: #fdf8e8; color: #222; -webkit-text-size-adjust: 100%;
+  }
+  .wrap { max-width: 560px; margin: 0 auto; padding: 20px 16px 60px; }
+  header { text-align: center; margin-bottom: 18px; }
+  header .day { display: inline-block; background: #e8457a; color: #fff; font-weight: 700;
+    border-radius: 20px; padding: 3px 12px; font-size: 13px; }
+  h1 { font-size: 22px; margin: 8px 0 4px; }
+  header p { margin: 0; color: #666; font-size: 14px; }
+  .name { display: flex; gap: 8px; align-items: center; background: #fff; border-radius: 12px;
+    padding: 10px 14px; margin-bottom: 14px; box-shadow: 0 1px 3px rgba(0,0,0,.08); }
+  .name label { font-weight: 600; white-space: nowrap; }
+  .name input { flex: 1; border: none; border-bottom: 2px solid #ddd; font-size: 17px; padding: 4px; outline: none; }
+  .q { background: #fff; border-radius: 12px; padding: 14px; margin-bottom: 10px;
+    box-shadow: 0 1px 3px rgba(0,0,0,.08); border: 2px solid transparent; }
+  .q .top { display: flex; gap: 8px; align-items: baseline; }
+  .q .num { color: #1f8a5b; font-weight: 800; min-width: 26px; }
+  .q .mean { font-size: 17px; font-weight: 600; line-height: 1.45; }
+  .q .pos { display: inline-block; font-size: 12px; color: #1f8a5b; border: 1px solid #1f8a5b;
+    border-radius: 4px; padding: 0 4px; margin-right: 4px; vertical-align: 2px; }
+  .q .tip { font-size: 13px; color: #999; margin-top: 2px; padding-left: 34px; }
+  .q input { width: 100%; margin-top: 10px; font-size: 19px; padding: 10px 12px;
+    border: 2px solid #ddd; border-radius: 10px; outline: none; font-family: inherit; }
+  .q input:focus { border-color: #4a7cf0; }
+  .q.ok { border-color: #2fb36b; background: #f0fbf4; }
+  .q.ng { border-color: #e5484d; background: #fff3f3; }
+  .q .res { margin-top: 8px; font-size: 15px; font-weight: 600; }
+  .q.ok .res { color: #2fb36b; }
+  .q.ng .res { color: #e5484d; }
+  .q.ng .res b { color: #222; font-size: 17px; }
+  button { font-family: inherit; font-size: 17px; font-weight: 700; border: none; border-radius: 12px;
+    padding: 14px; width: 100%; cursor: pointer; margin-top: 8px; }
+  .primary { background: #4a7cf0; color: #fff; }
+  .secondary { background: #fff; color: #4a7cf0; border: 2px solid #4a7cf0; }
+  .score { display: none; text-align: center; background: #fff; border-radius: 16px; padding: 20px;
+    margin-bottom: 16px; box-shadow: 0 2px 8px rgba(0,0,0,.1); }
+  .score .big { font-size: 44px; font-weight: 800; color: #4a7cf0; }
+  .score .msg { font-size: 16px; margin-top: 4px; }
+  .score .who { color: #666; font-size: 14px; }
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <span class="day">DAY 02</span>
+    <h1>영단어 시험</h1>
+    <p>우리말 뜻을 보고 영어 단어를 써 보세요</p>
+  </header>
+
+  <div class="name"><label for="who">이름</label><input id="who" placeholder="이름을 써 주세요" autocomplete="off"></div>
+
+  <div class="score" id="score">
+    <div class="who" id="scoreWho"></div>
+    <div class="big" id="scoreBig"></div>
+    <div class="msg" id="scoreMsg"></div>
+  </div>
+
+  <div id="list"></div>
+
+  <button class="primary" id="gradeBtn">채점하기</button>
+  <button class="secondary hidden" id="wrongBtn">틀린 것만 다시 풀기</button>
+  <button class="secondary hidden" id="againBtn">처음부터 다시 (순서 섞기)</button>
+</div>
+
+<script>
+const WORDS = [
+  { a: "attractive",  pos: "형",   m: "1 매력적인  2 사람을 끄는" },
+  { a: "passive",     pos: "형",   m: "소극적인, 수동적인" },
+  { a: "diligent",    pos: "형",   m: "근면한, 성실한, 부지런한" },
+  { a: "impatient",   pos: "형",   m: "1 성급한, 참을성 없는  2 몹시 ~하고 싶어 하는" },
+  { a: "ambitious",   pos: "형",   m: "야망이 있는, 야심 찬" },
+  { a: "brilliant",   pos: "형",   m: "1 훌륭한, 눈부신, (재능이) 뛰어난  2 빛나는" },
+  { a: "elegant",     pos: "형",   m: "우아한, 품위 있는" },
+  { a: "humble",      pos: "형",   m: "1 겸손한  2 초라한, 변변찮은" },
+  { a: "arrogant",    pos: "형",   m: "오만한, 거만한" },
+  { a: "aggressive",  pos: "형",   m: "1 공격적인  2 매우 적극적인" },
+  { a: "fierce",      pos: "형",   m: "1 사나운, 험악한  2 격렬한" },
+  { a: "creative",    pos: "형",   m: "1 창의적인, 창조적인  2 독창적인" },
+  { a: "active",      pos: "형",   m: "활동적인, 적극적인" },
+  { a: "forehead",    pos: "명",   m: "이마" },
+  { a: "wrinkle",     pos: "명·동", m: "주름 / 주름지게 하다" },
+  { a: "greed",       pos: "명",   m: "욕심, 탐욕" },
+  { a: "oval",        pos: "형·명", m: "타원형의, 달걀형의 / 달걀 모양, 타원형" },
+  { a: "odd",         pos: "형",   m: "1 이상한, 기묘한  2 홀수의" },
+  { a: "take after",  pos: "숙어", m: "~을 닮다", tip: "2단어" },
+  { a: "stand out",   pos: "숙어", m: "1 두드러지다, 눈에 띄다  2 빼어나다, 뛰어나다", tip: "2단어" },
+];
+
+const listEl = document.getElementById("list");
+const gradeBtn = document.getElementById("gradeBtn");
+const wrongBtn = document.getElementById("wrongBtn");
+const againBtn = document.getElementById("againBtn");
+const scoreEl = document.getElementById("score");
+let current = [];
+
+function shuffle(arr) {
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+const norm = s => s.toLowerCase().replace(/[.’'`]/g, "").replace(/\s+/g, " ").trim();
+const esc = s => s.replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+
+function render(words) {
+  current = shuffle(words);
+  listEl.innerHTML = current.map((w, i) => `
+    <div class="q" id="q${i}">
+      <div class="top"><span class="num">${i + 1}.</span>
+        <span class="mean"><span class="pos">${w.pos}</span>${esc(w.m)}</span></div>
+      ${w.tip ? `<div class="tip">(${w.tip})</div>` : ""}
+      <input id="in${i}" type="text" autocomplete="off" autocorrect="off" autocapitalize="none"
+             spellcheck="false" enterkeyhint="next" placeholder="영어로 쓰기">
+      <div class="res" id="r${i}"></div>
+    </div>`).join("");
+  current.forEach((_, i) => {
+    document.getElementById("in" + i).addEventListener("keydown", e => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        const next = document.getElementById("in" + (i + 1));
+        if (next) next.focus(); else e.target.blur();
+      }
+    });
+  });
+  scoreEl.style.display = "none";
+  gradeBtn.classList.remove("hidden");
+  wrongBtn.classList.add("hidden");
+  againBtn.classList.add("hidden");
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+gradeBtn.addEventListener("click", () => {
+  const blanks = current.filter((_, i) => !document.getElementById("in" + i).value.trim()).length;
+  if (blanks && !confirm(`아직 ${blanks}문제를 안 썼어요. 그래도 채점할까요?`)) return;
+
+  let correct = 0;
+  const wrong = [];
+  current.forEach((w, i) => {
+    const inp = document.getElementById("in" + i);
+    const box = document.getElementById("q" + i);
+    const res = document.getElementById("r" + i);
+    inp.readOnly = true;
+    if (norm(inp.value) === norm(w.a)) {
+      correct++;
+      box.className = "q ok";
+      res.textContent = "⭕ 정답!";
+    } else {
+      wrong.push(w);
+      box.className = "q ng";
+      res.innerHTML = `❌ 정답: <b>${esc(w.a)}</b>`;
+    }
+  });
+
+  const total = current.length;
+  const score = Math.round(correct / total * 100);
+  const name = document.getElementById("who").value.trim();
+  document.getElementById("scoreWho").textContent = name ? `${name}의 점수` : "점수";
+  document.getElementById("scoreBig").textContent = `${correct} / ${total}`;
+  document.getElementById("scoreMsg").textContent =
+    score === 100 ? "🎉 만점! 정말 잘했어요!" :
+    score >= 80 ? `👍 ${score}점! 거의 다 맞았어요` :
+    score >= 50 ? `💪 ${score}점! 틀린 단어만 다시 해 봐요` :
+                  `📖 ${score}점! 한 번 더 외우고 도전해요`;
+  scoreEl.style.display = "block";
+
+  gradeBtn.classList.add("hidden");
+  againBtn.classList.remove("hidden");
+  wrongBtn.classList.toggle("hidden", wrong.length === 0);
+  wrongBtn.onclick = () => render(wrong);
+  window.scrollTo({ top: 0, behavior: "smooth" });
+});
+
+againBtn.addEventListener("click", () => render(WORDS));
+render(WORDS);
+</script>
+</body>
+</html>
